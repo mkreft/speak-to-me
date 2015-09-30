@@ -9,4 +9,4 @@ Android chat experiment with an A.L.I.C.E. artificial intelligence.
 
 ![Demo](art/device-2015-03-30-105702.png)
 
-![Demo](art/device-2015-03-30-105802.png)
+![Demo](art/device-2015-03-30-105802.png)# speak-to-me
