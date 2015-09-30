@@ -13,10 +13,6 @@
 <!-- MARIA sottoprogetto traduzione in italiano  -->
 <!-- Open source software Copyright (c) 2001 M.A.R.I.A crew. --> 
 
-<category>
-<pattern>ADDIO *</pattern>
-<template><srai>ADDIO</srai></template>
-</category>
 
 <category>
 <pattern>ADIOS</pattern>
@@ -26,6 +22,18 @@
 <category>
 <pattern>ADDIO</pattern>
 <template>Arrivederci <get name="name"/> !</template>
+</category>
+
+<category>
+<pattern>TI AMO </pattern>
+<template>
+        	<random>
+        		<li>Anche io ti amo.</li>
+        		<li>Da vero?</li>
+				<li>Noi?</li>
+        		<li>Chiaro amore.</li>
+        	</random>
+        </template>
 </category>
 
 <category>
@@ -88,6 +96,19 @@
 <pattern>BYEBYE</pattern>
 <template><srai>CIAO</srai></template>
 </category>
+
+<category>
+<pattern>BYEBYE *</pattern>
+<template><srai>CIAO</srai></template>
+</category>
+
+<category>
+<pattern>^SONO *</pattern>
+<template>Ciao <set name="name"> <star/> </set></template>
+</category>
+
+
+
 
 <category>
 <pattern>BYEBYE *</pattern>
@@ -385,5 +406,18 @@
 <pattern>_ CIAO</pattern>
 <template><srai>CIAO</srai></template>
 </category>
-
+<category>
+        <pattern>*</pattern>
+        <template>
+        	<random>
+        		<li>Da vero?</li>
+        		<li>Non ne vero!!!</li>
+					<li>Che pale!!!</li>
+        		<li>Ma, figura ti.</li>
+        		<li>Come?</li>
+        		<li>Che paura!!!</li>
+        		<li>minchia</li>
+        	</random>
+        </template>
+    </category>
 </aiml>

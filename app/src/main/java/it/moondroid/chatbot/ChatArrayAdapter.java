@@ -11,14 +11,16 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.speech.tts.TextToSpeech;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by marco.granatiero on 30/09/2014.
  */
-public class ChatArrayAdapter extends ArrayAdapter<ChatMessage> {
+public class ChatArrayAdapter extends ArrayAdapter<ChatMessage> implements TextToSpeech.OnInitListener{
 
     private static final int LEFT_MESSAGE = -1;
     private static final int RIGHT_MESSAGE = 1;
@@ -26,6 +28,7 @@ public class ChatArrayAdapter extends ArrayAdapter<ChatMessage> {
     private TextView messageTextView;
     private List<ChatMessage> chatMessages = new ArrayList<ChatMessage>();
     private LinearLayout wrapper;
+    private TextToSpeech tts;
 
     @Override
     public void add(ChatMessage object) {
@@ -35,6 +38,7 @@ public class ChatArrayAdapter extends ArrayAdapter<ChatMessage> {
 
     public ChatArrayAdapter(Context context) {
         super(context, android.R.layout.simple_list_item_1);
+        tts = new TextToSpeech(context, this);
     }
 
     public int getCount() {
@@ -44,6 +48,34 @@ public class ChatArrayAdapter extends ArrayAdapter<ChatMessage> {
     public ChatMessage getItem(int index) {
         return this.chatMessages.get(index);
     }
+
+    private void speakOut(String text) {
+
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+    }
+
+
+    @Override
+    public void onInit(int i) {
+        if (i == TextToSpeech.SUCCESS) {
+
+
+        int result = tts.setLanguage(Locale.ITALY);
+            tts.setSpeechRate(0.85f);
+            tts.setPitch(0.7f);
+
+        if (result == TextToSpeech.LANG_MISSING_DATA
+        || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+        Log.e("TTS", "This Language is not supported");
+        } else {
+        //btnSpeak.setEnabled(true);
+        speakOut("Ciao! Sono bot Babbel. Parliamo italiano.");
+        }
+
+        } else {
+        Log.e("TTS", "Initilization Failed!");
+        }
+        }
 
     @Override
     public int getViewTypeCount() {
@@ -58,7 +90,9 @@ public class ChatArrayAdapter extends ArrayAdapter<ChatMessage> {
     public View getView(int position, View convertView, ViewGroup parent) {
         View row = convertView;
         ChatMessage comment = getItem(position);
+        //if(position == getCount()){
 
+        //}
         int type = getItemViewType(position);
 
         if (row == null) {
@@ -66,6 +100,10 @@ public class ChatArrayAdapter extends ArrayAdapter<ChatMessage> {
 
             if(type==LEFT_MESSAGE){
                 row = inflater.inflate(R.layout.chat_listitem_left, parent, false);
+                if(position == getCount()-1){
+                    speakOut(comment.text);
+                }
+
             }
             if(type==RIGHT_MESSAGE){
                 row = inflater.inflate(R.layout.chat_listitem_right, parent, false);

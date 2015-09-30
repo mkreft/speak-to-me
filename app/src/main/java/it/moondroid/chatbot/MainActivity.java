@@ -2,24 +2,33 @@ package it.moondroid.chatbot;
 
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.speech.RecognizerIntent;
+
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Locale;
 
-public class MainActivity extends Activity {
+
+public class MainActivity extends Activity{
 
     private static final String FRAGMENT_DIALOG_LOG_TAG = "BrainLoggerDialog";
 
@@ -27,7 +36,13 @@ public class MainActivity extends Activity {
     private static ChatArrayAdapter adapter;
     private EditText chatEditText;
     private BrainLoggerDialog dialog;
+
+
     private ResponseReceiver mMessageReceiver;
+
+
+    private ImageButton btnSpeak;
+    private final int REQ_CODE_SPEECH_INPUT = 100;
 
 
     @Override
@@ -53,10 +68,27 @@ public class MainActivity extends Activity {
             dialog = (BrainLoggerDialog) fm.findFragmentByTag(FRAGMENT_DIALOG_LOG_TAG);
         }
 
+
+        btnSpeak = (ImageButton) findViewById(R.id.btnSpeak);
+
+
+
+        // hide the action bar
+        getActionBar().hide();
+
+        btnSpeak.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                promptSpeechInput();
+            }
+        });
+
         chatListView = (ListView) findViewById(R.id.chat_listView);
         chatListView.setAdapter(adapter);
 
         chatEditText = (EditText) findViewById(R.id.chat_editText);
+
         chatEditText.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 // If the event is a key-down event on the "enter" button
@@ -80,6 +112,54 @@ public class MainActivity extends Activity {
 
         //hide keyboard
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
+
+    /**
+     * Showing google speech input dialog
+     * */
+    private void promptSpeechInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "it-IT");
+
+
+        //intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+        //		RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        //intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        //intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
+        //		getString(R.string.speech_prompt));
+        try {
+            startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
+        } catch (ActivityNotFoundException a) {
+            Toast.makeText(getApplicationContext(),
+                    "no speech",// todo : getString(R.string.speech_not_supported),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Receiving speech input
+     * */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REQ_CODE_SPEECH_INPUT: {
+                if (resultCode == RESULT_OK && null != data) {
+
+                    ArrayList<String> result = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    // write this in chat
+                    adapter.add(new ChatMessage(false, result.get(0)));
+                    Intent brainIntent = new Intent(MainActivity.this, BrainService.class);
+                    brainIntent.setAction(BrainService.ACTION_QUESTION);
+                    brainIntent.putExtra(BrainService.EXTRA_QUESTION, result.get(0));
+                    startService(brainIntent);
+                }
+                break;
+            }
+
+        }
     }
 
     @Override
@@ -134,6 +214,9 @@ public class MainActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+
 
 
     // Broadcast receiver for receiving status updates from the IntentService
